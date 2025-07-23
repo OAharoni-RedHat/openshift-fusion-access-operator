@@ -125,7 +125,9 @@ manifests: yq controller-gen ## Generate WebhookConfiguration, ClusterRole and C
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	# This reads config/samples/fusion_v1alpha1_fusionaccess.yaml and keeps it in sync
 	# with the initialization-resource
-	sed -i "s|^\(.*operatorframework.io/initialization-resource:\).*|\1 '$$($(YQ) -o=json -I=0 config/samples/fusion_v1alpha1_fusionaccess.yaml)'|" config/manifests/bases/openshift-fusion-access-operator.clusterserviceversion.yaml
+	# Use sed -i '' for macOS, sed -i for GNU; this works on both:
+	$(eval SED_INPLACE := $(shell sed --version >/dev/null 2>&1 && echo "-i" || echo "-i ''"))
+	sed $(SED_INPLACE) "s|^\(.*operatorframework.io/initialization-resource:\).*|\1 '$$($(YQ) -o=json -I=0 config/samples/fusion_v1alpha1_fusionaccess.yaml)'|" config/manifests/bases/openshift-fusion-access-operator.clusterserviceversion.yaml
 
 .PHONY: cnsa-supported-versions
 cnsa-supported-versions: ## Generates CNSA supported version metadata from files/ folder
@@ -167,8 +169,8 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 # Override GOOS and GOARCH to build for a different OS and architecture. For
 # example, MacOS M series (arm64) should be: GOOS=darwin GOARCH=arm64 make build
-GOOS ?= linux
-GOARCH ?= amd64
+GOOS ?= darwin
+GOARCH ?= arm64
 
 .PHONY: build-devicefinder
 build-devicefinder: ## Build devicefinder binary.
@@ -406,7 +408,7 @@ endif
 # https://github.com/operator-framework/community-operators/blob/7f1438c/docs/packaging-operator.md#updating-your-existing-operator
 .PHONY: catalog-build
 catalog-build: opm ## Build a catalog image.
-	$(OPM) index add --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+	$(OPM) index add --container-tool $(CONTAINER_TOOL) --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
 
 # Push the catalog image.
 .PHONY: catalog-push

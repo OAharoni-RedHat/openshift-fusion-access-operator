@@ -4,8 +4,8 @@ set -x -e -o pipefail
 CATALOGSOURCE="test-openshift-fusion-access-operator"
 NS="ibm-fusion-access"
 OPERATOR="openshift-fusion-access-operator"
-VERSION="${VERSION:-6.6.6}"
-REGISTRY="${REGISTRY:-kuemper.int.rhx/bandini}"
+VERSION="${VERSION:-9.9.99}"
+REGISTRY="${REGISTRY:-quay.io/rh-ee-oaharoni}"
 
 wait_for_resource() {
     local resource_type=$1  # Either "packagemanifest", "operator", or "csv"
@@ -44,8 +44,8 @@ wait_for_resource() {
 }
 
 apply_subscription() {
-    oc delete -n ${NS} subscription/${OPERATOR} || /bin/true
-    oc delete catalogsource/test-openshift-fusion-access-operator || /bin/true
+    oc delete -n "${NS}" "subscription/${OPERATOR}" 2>/dev/null || true
+    oc delete "catalogsource/${CATALOGSOURCE}" 2>/dev/null || true
     oc apply -f - <<EOF
     apiVersion: v1
     kind: Namespace

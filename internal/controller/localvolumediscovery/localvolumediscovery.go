@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 
 	fusionv1alpha "github.com/openshift-storage-scale/openshift-fusion-access-operator/api/v1alpha1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -18,8 +19,31 @@ func NewLocalVolumeDiscovery(namespace string) *fusionv1alpha.LocalVolumeDiscove
 			Name:      "auto-discover-devices",
 			Namespace: namespace,
 		},
+		Spec: fusionv1alpha.LocalVolumeDiscoverySpec{
+			NodeSelector: &v1.NodeSelector{
+				NodeSelectorTerms: []v1.NodeSelectorTerm{
+					{
+						MatchExpressions: []v1.NodeSelectorRequirement{
+							{
+								Key:      "node-role.kubernetes.io/infra",
+								Operator: v1.NodeSelectorOpExists,
+							},
+						},
+					},
+					{
+						MatchExpressions: []v1.NodeSelectorRequirement{
+							{
+								Key:      "node-role.kubernetes.io/worker",
+								Operator: v1.NodeSelectorOpExists,
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 }
+
 func CreateOrUpdateLocalVolumeDiscovery(ctx context.Context, devicefinder *fusionv1alpha.LocalVolumeDiscovery, cl client.Client) error {
 	oldCP := &fusionv1alpha.LocalVolumeDiscovery{}
 	if err := cl.Get(ctx, client.ObjectKeyFromObject(devicefinder), oldCP); apierrors.IsNotFound(err) {

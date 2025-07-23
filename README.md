@@ -1,5 +1,7 @@
 # OpenShift Fusion Access Operator
 
+**Note: This document was written primarily using cursor**
+
 The OpenShift Fusion Access Operator is a Kubernetes operator that enables **IBM Fusion Access for SAN** on OpenShift clusters. Fusion Access for SAN is a cloud-native storage solution designed to help enterprises transition smoothly from traditional virtualization environments to OpenShift while reusing existing SAN infrastructure.
 
 ## Overview
@@ -76,7 +78,7 @@ The operator continuously monitors the system status and reports:
 
 ## Prerequisites
 
-- OpenShift 4.12 or higher
+- OpenShift 4.19 or higher
 - IBM Fusion Access entitlement (see https://access.ibmfusion.eu/)
 - Cluster administrator privileges
 - Supported storage hardware
