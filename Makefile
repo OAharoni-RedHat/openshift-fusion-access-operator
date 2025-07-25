@@ -169,8 +169,8 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 # Override GOOS and GOARCH to build for a different OS and architecture. For
 # example, MacOS M series (arm64) should be: GOOS=darwin GOARCH=arm64 make build
-GOOS ?= darwin
-GOARCH ?= arm64
+GOOS ?= linux
+GOARCH ?= amd64
 
 .PHONY: build-devicefinder
 build-devicefinder: ## Build devicefinder binary.
@@ -374,6 +374,17 @@ bundle-push: ## Push the bundle image.
 	$(CONTAINER_TOOL) push $(BUNDLE_IMG)
 	$(CONTAINER_TOOL) push $(IMAGE_TAG_BASE)-bundle:latest
 
+# This section defines how to ensure the 'opm' (Operator Package Manager) binary is available locally for use in catalog image building.
+# - Declares 'opm' as a phony Makefile target.
+# - Sets the OPM variable to point to the expected local binary location ($(LOCALBIN)/opm).
+# - The 'opm' target downloads 'opm' if it is not already present locally or in the system PATH.
+#   - If $(OPM) does not exist and 'opm' is not found in the system PATH:
+#     - Creates the directory for the binary if needed.
+#     - Detects the current OS and architecture.
+#     - Downloads the appropriate 'opm' release from GitHub to $(OPM).
+#     - Makes the binary executable.
+#   - If 'opm' is found in the system PATH, sets OPM to that path.
+#   - This ensures that subsequent Makefile targets can reliably invoke 'opm' via $(OPM).
 .PHONY: opm
 OPM = $(LOCALBIN)/opm
 opm: ## Download opm locally if necessary.
