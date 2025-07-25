@@ -169,8 +169,8 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 # Override GOOS and GOARCH to build for a different OS and architecture. For
 # example, MacOS M series (arm64) should be: GOOS=darwin GOARCH=arm64 make build
-GOOS ?= darwin
-GOARCH ?= arm64
+GOOS ?= linux
+GOARCH ?= amd64
 
 .PHONY: build-devicefinder
 build-devicefinder: ## Build devicefinder binary.
