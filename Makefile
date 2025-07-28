@@ -125,7 +125,9 @@ manifests: yq controller-gen ## Generate WebhookConfiguration, ClusterRole and C
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	# This reads config/samples/fusion_v1alpha1_fusionaccess.yaml and keeps it in sync
 	# with the initialization-resource
-	sed -i "s|^\(.*operatorframework.io/initialization-resource:\).*|\1 '$$($(YQ) -o=json -I=0 config/samples/fusion_v1alpha1_fusionaccess.yaml)'|" config/manifests/bases/openshift-fusion-access-operator.clusterserviceversion.yaml
+	# Use sed -i '' for macOS, sed -i for GNU; this works on both:
+	$(eval SED_INPLACE := $(shell sed --version >/dev/null 2>&1 && echo "-i" || echo "-i ''"))
+	sed $(SED_INPLACE) "s|^\(.*operatorframework.io/initialization-resource:\).*|\1 '$$($(YQ) -o=json -I=0 config/samples/fusion_v1alpha1_fusionaccess.yaml)'|" config/manifests/bases/openshift-fusion-access-operator.clusterserviceversion.yaml
 
 .PHONY: cnsa-supported-versions
 cnsa-supported-versions: ## Generates CNSA supported version metadata from files/ folder
