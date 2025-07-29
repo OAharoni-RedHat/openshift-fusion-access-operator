@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import type { IoK8sApiCoreV1Node } from "@/shared/types/kubernetes/1.30/types";
-import { STORAGE_ROLE_LABEL, WORKER_NODE_ROLE_LABEL } from "@/constants";
+import { INFRA_NODE_ROLE_LABEL, STORAGE_ROLE_LABEL, WORKER_NODE_ROLE_LABEL } from "@/constants";
 import { hasLabel } from "@/shared/utils/console/K8sResourceCommon";
 import { useFusionAccessTranslations } from "@/shared/hooks/useFusionAccessTranslations";
 import { useWatchLocalVolumeDiscoveryResult } from "@/shared/hooks/useWatchLocalVolumeDiscoveryResult";
@@ -41,9 +41,25 @@ export const useNodesSelectionTableViewModel =
       }
     }, [dispatch, lvdrs.error, lvdrs.loaded, t]);
 
-    const nodes = useWatchNode({
+    const workerNodes = useWatchNode({
       withLabels: [WORKER_NODE_ROLE_LABEL],
     });
+    const infraNodes = useWatchNode({
+      withLabels: [INFRA_NODE_ROLE_LABEL],
+    });
+
+    const nodes = useMemo(() => {
+      const allNodes = [...(workerNodes.data ?? []), ...(infraNodes.data ?? [])];
+      // Remove duplicates based on node name
+      const uniqueNodes = allNodes.filter((node, index, arr) => 
+        arr.findIndex(n => n.metadata?.name === node.metadata?.name) === index
+      );
+      return {
+        data: uniqueNodes,
+        loaded: workerNodes.loaded && infraNodes.loaded,
+        error: workerNodes.error || infraNodes.error,
+      };
+    }, [workerNodes, infraNodes]);
     useEffect(() => {
       if (nodes.error) {
         dispatch({

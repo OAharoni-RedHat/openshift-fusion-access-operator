@@ -5,7 +5,7 @@ CATALOGSOURCE="test-openshift-fusion-access-operator"
 NS="ibm-fusion-access"
 OPERATOR="openshift-fusion-access-operator"
 VERSION="${VERSION:-6.6.6}"
-REGISTRY="${REGISTRY:-kuemper.int.rhx/bandini}"
+REGISTRY="${REGISTRY:-quay.io/rh-ee-oaharoni}"
 
 wait_for_resource() {
     local resource_type=$1  # Either "packagemanifest", "operator", or "csv"
